@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>License Key Generator - ADMIN</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Siemreap&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Khmer OS Siemreap', sans-serif; }
+        .khmer-font { font-family: 'Khmer OS Siemreap', sans-serif; }
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar { width: 6px; }
+        textarea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- CONFIGURATION (Must match the Python version) ---
+        const SECRET_KEY = "KIMSAN_SECURE_2026";
+
+        const THEMES = {
+            Dark: {
+                bg: "bg-[#1a1a2e]",
+                card: "bg-[#16213e]",
+                text: "text-white",
+                input: "bg-[#1a1a2e] border-[#0f3460] text-white",
+                accent: "text-[#4ff10f]",
+                accentBg: "bg-[#4ff10f]",
+                btn: "bg-[#27ae60] hover:bg-[#4ff10f] text-white",
+                border: "border-[#0f3460]"
+            },
+            Light: {
+                bg: "bg-[#f3f4f6]",
+                card: "bg-white",
+                text: "text-gray-900",
+                input: "bg-white border-gray-300 text-gray-900",
+                accent: "text-blue-600",
+                accentBg: "bg-blue-600",
+                btn: "bg-green-600 hover:bg-green-700 text-white",
+                border: "border-gray-200"
+            },
+            Midnight: {
+                bg: "bg-black",
+                card: "bg-[#0d0d0d]",
+                text: "text-[#00ff41]",
+                input: "bg-black border-[#00ff41] text-[#00ff41]",
+                accent: "text-[#00ff41]",
+                accentBg: "bg-[#00ff41]",
+                btn: "bg-[#1a1a1a] hover:bg-[#00ff41] hover:text-black border border-[#00ff41] text-[#00ff41]",
+                border: "border-[#00ff41]"
+            },
+            Forest: {
+                bg: "bg-[#1b3022]",
+                card: "bg-[#26413c]",
+                text: "text-[#ecf0f1]",
+                input: "bg-[#1b3022] border-[#2de24e] text-[#ecf0f1]",
+                accent: "text-[#2de24e]",
+                accentBg: "bg-[#2de24e]",
+                btn: "bg-[#5e8c61] hover:bg-[#2de24e] text-white",
+                border: "border-[#2de24e]"
+            },
+            Royal: {
+                bg: "bg-[#2d033b]",
+                card: "bg-[#810ca8]",
+                text: "text-white",
+                input: "bg-[#2d033b] border-[#e5b8f4] text-white",
+                accent: "text-[#ffd700]",
+                accentBg: "bg-[#ffd700]",
+                btn: "bg-[#c147e9] hover:bg-[#ffd700] hover:text-black text-white",
+                border: "border-[#e5b8f4]"
+            }
+        };
+
+        const LANG_DATA = {
+            kh: {
+                title: "កម្មវិធីគ្រប់គ្រងអាជ្ញាប័ណ្ណ - ADMIN",
+                mid: "លេខសម្គាល់ម៉ាស៊ីន (Machine ID):",
+                days: "សុពលភាពប្រើប្រាស់ (ចំនួនថ្ងៃ):",
+                gen_btn: "បង្កើតកូដអាជ្ញាប័ណ្ណ",
+                copy_btn: "ចម្លងកូដ (Copy)",
+                result: "កូដដែលបានបង្កើតរួច:",
+                success: "ជោគជ័យ",
+                error: "កំហុស",
+                fill_all: "សូមបំពេញព័ត៌មានឱ្យគ្រប់គ្រាន់!",
+                num_only: "ចំនួនថ្ងៃត្រូវតែជាលេខរៀង!",
+                copied: "កូដត្រូវបានចម្លង!",
+                theme_lbl: "រចនាប័ទ្ម:",
+                lang_lbl: "ភាសា:",
+                expiry_msg: "កូដនឹងផុតកំណត់នៅថ្ងៃទី:",
+                placeholder_mid: "ឧទាហរណ៍: 8D7F2A3B...",
+                placeholder_days: "ឧទាហរណ៍: 30, 365..."
+            },
+            en: {
+                title: "LICENSE KEY GENERATOR - ADMIN",
+                mid: "User Machine ID:",
+                days: "Validity Period (Days):",
+                gen_btn: "GENERATE LICENSE KEY",
+                copy_btn: "COPY KEY TO CLIPBOARD",
+                result: "Generated License Key:",
+                success: "Success",
+                error: "Error",
+                fill_all: "Please fill in all required fields!",
+                num_only: "Days must be a numeric value!",
+                copied: "Key copied to clipboard!",
+                theme_lbl: "Theme:",
+                lang_lbl: "Language:",
+                expiry_msg: "Key will expire on:",
+                placeholder_mid: "Example: 8D7F2A3B...",
+                placeholder_days: "Example: 30, 365..."
+            }
+        };
+
+        function App() {
+            const [theme, setTheme] = useState('Dark');
+            const [lang, setLang] = useState('kh');
+            const [machineId, setMachineId] = useState('');
+            const [days, setDays] = useState('');
+            const [generatedKey, setGeneratedKey] = useState('');
+            const [toast, setToast] = useState(null);
+
+            const t = THEMES[theme];
+            const l = LANG_DATA[lang];
+
+            const showToast = (msg, type = 'success') => {
+                setToast({ msg, type });
+                setTimeout(() => setToast(null), 3000);
+            };
+
+            const xorEncrypt = (text) => {
+                let result = "";
+                for (let i = 0; i < text.length; i++) {
+                    const charCode = text.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length);
+                    result += String.fromCharCode(charCode);
+                }
+                return result;
+            };
+
+            const handleGenerate = () => {
+                if (!machineId || !days) {
+                    showToast(l.fill_all, 'error');
+                    return;
+                }
+
+                const dayCount = parseInt(days);
+                if (isNaN(dayCount)) {
+                    showToast(l.num_only, 'error');
+                    return;
+                }
+
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + dayCount);
+                const expiryStr = expiryDate.toISOString().split('T')[0];
+                const genDateStr = new Date().toISOString().split('T')[0];
+
+                const payload = JSON.stringify({
+                    mid: machineId,
+                    expiry: expiryStr,
+                    gen_date: genDateStr
+                });
+
+                const encrypted = xorEncrypt(payload);
+                const finalKey = btoa(encrypted);
+                
+                setGeneratedKey(finalKey);
+                showToast(`${l.expiry_msg} ${expiryStr}`);
+            };
+
+            const handleCopy = () => {
+                if (!generatedKey) return;
+                const textArea = document.createElement("textarea");
+                textArea.value = generatedKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textArea);
+                showToast(l.copied);
+            };
+
+            return (
+                <div className={`min-h-screen transition-colors duration-500 p-4 flex items-center justify-center ${t.bg}`}>
+                    <div className={`w-full max-w-md p-8 rounded-3xl shadow-2xl transition-all border-2 ${t.card} ${t.border}`}>
+                        
+                        {/* Toolbar */}
+                        <div className="flex justify-between items-center mb-8 border-b pb-4 border-opacity-10 border-white">
+                            <div className="flex items-center gap-2">
+                                <span className={`text-xs font-bold uppercase tracking-widest ${t.text} opacity-50`}>{l.lang_lbl}</span>
+                                <select 
+                                    className={`bg-transparent outline-none text-sm cursor-pointer font-bold ${t.text}`}
+                                    value={lang}
+                                    onChange={(e) => setLang(e.target.value)}
+                                >
+                                    <option value="kh" className="text-black">ភាសាខ្មែរ</option>
+                                    <option value="en" className="text-black">English</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className={`text-xs font-bold uppercase tracking-widest ${t.text} opacity-50`}>{l.theme_lbl}</span>
+                                <select 
+                                    className={`bg-transparent outline-none text-sm cursor-pointer font-bold ${t.text}`}
+                                    value={theme}
+                                    onChange={(e) => setTheme(e.target.value)}
+                                >
+                                    {Object.keys(THEMES).map(themeName => (
+                                        <option key={themeName} value={themeName} className="text-black">{themeName}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Title */}
+                        <h1 className={`text-2xl font-bold text-center mb-8 ${t.accent} leading-tight uppercase tracking-tight`}>
+                            {l.title}
+                        </h1>
+
+                        {/* Form */}
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className={`block text-xs font-bold uppercase tracking-widest ${t.text} opacity-70`}>
+                                    {l.mid}
+                                </label>
+                                <input 
+                                    type="text"
+                                    placeholder={l.placeholder_mid}
+                                    className={`w-full p-4 rounded-xl border-2 outline-none transition-all focus:border-opacity-100 border-opacity-50 ${t.input} ${t.border}`}
+                                    value={machineId}
+                                    onChange={(e) => setMachineId(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className={`block text-xs font-bold uppercase tracking-widest ${t.text} opacity-70`}>
+                                    {l.days}
+                                </label>
+                                <input 
+                                    type="number"
+                                    placeholder={l.placeholder_days}
+                                    className={`w-full p-4 rounded-xl border-2 outline-none transition-all focus:border-opacity-100 border-opacity-50 ${t.input} ${t.border}`}
+                                    value={days}
+                                    onChange={(e) => setDays(e.target.value)}
+                                />
+                            </div>
+
+                            <button 
+                                onClick={handleGenerate}
+                                className={`w-full py-4 rounded-xl font-black uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] ${t.btn}`}
+                            >
+                                {l.gen_btn}
+                            </button>
+                        </div>
+
+                        {/* Result Area */}
+                        {generatedKey && (
+                            <div className="mt-8 space-y-3 animate-in fade-in duration-500">
+                                <label className={`block text-xs font-bold uppercase tracking-widest ${t.text} opacity-70`}>
+                                    {l.result}
+                                </label>
+                                <div className="relative">
+                                    <textarea 
+                                        readOnly
+                                        className={`w-full p-4 h-28 rounded-xl border-2 font-mono text-sm resize-none outline-none border-opacity-50 ${t.input} ${t.border}`}
+                                        value={generatedKey}
+                                    />
+                                    <button 
+                                        onClick={handleCopy}
+                                        className={`absolute right-3 bottom-3 p-2 px-4 rounded-lg bg-black bg-opacity-30 hover:bg-opacity-50 text-white text-xs font-bold transition-all`}
+                                    >
+                                        {l.copy_btn}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Footer */}
+                        <div className={`mt-10 pt-6 border-t border-opacity-10 border-white text-center`}>
+                            <p className={`text-[10px] font-bold uppercase tracking-[0.2em] opacity-40 mb-1 ${t.text}`}>
+                                Development by KIMSAN
+                            </p>
+                            <a 
+                                href="https://t.me/kim_saa" 
+                                target="_blank" 
+                                className={`text-[11px] font-bold ${t.accent} hover:underline transition-all`}
+                            >
+                                @kim_saa | LICENSE SYSTEM
+                            </a>
+                        </div>
+
+                        {/* Toast Notification */}
+                        {toast && (
+                            <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce z-50 ${toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}>
+                                <span className="text-sm font-black uppercase tracking-widest">{toast.msg}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
